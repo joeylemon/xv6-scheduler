@@ -41,7 +41,7 @@ get_ticks(int pid)
 
 // Run a trial which spawns NUM_CHILDREN processes and measures their tick share
 void
-run_trial()
+run_trial(int trial_num)
 {
   int i;
   int start_ticks = uptime();
@@ -53,6 +53,7 @@ run_trial()
     tc[i].tick_share = -1;
   }
   
+  printf(1, "run %d:", trial_num);
   for (i = 0; i < NUM_CHILDREN; i++) {
     // Set the tickets in the parent before forking the child (child inherits tickets)
     if (settickets(tc[i].tickets) == -1) {
@@ -117,16 +118,6 @@ main(int argc, char *argv[])
   for (i = 0; i < NUM_CHILDREN; i++)
     total_tickets += (i+1)*TICKET_MULTIPLIER;
 
-  // Print ideal header
-  printf(1, "ideals:\t");
-  for (i = 0; i < NUM_CHILDREN; i++) {
-    int tickets = (i+1)*TICKET_MULTIPLIER;
-    int ideal_ticks = ((float)tickets/(float)total_tickets) * DURATION;
-    printf(1, "%d", ideal_ticks);
-    if (i == NUM_CHILDREN-1) printf(1, "\n");
-    else printf(1, "\t");
-  }
-
   // Print child numbers header
   printf(1, "child:\t");
   for (i = 0; i < NUM_CHILDREN; i++) {
@@ -135,11 +126,19 @@ main(int argc, char *argv[])
     else printf(1, "\t");
   }
 
+  // Print ideal header
+  printf(1, "ideal:\t");
+  for (i = 0; i < NUM_CHILDREN; i++) {
+    int tickets = (i+1)*TICKET_MULTIPLIER;
+    int ideal_ticks = ((float)tickets/(float)total_tickets) * DURATION;
+    printf(1, "%d", ideal_ticks);
+    if (i == NUM_CHILDREN-1) printf(1, "\n");
+    else printf(1, "\t");
+  }
+
   // Print trial results
-  printf(1, "runs:");
   for (i = 0; i < TRIALS; i++) {
-    run_trial();
-    printf(1, "\n");
+    run_trial(i);
   }
   
   exit();
